@@ -1275,6 +1275,83 @@ function EditSessionView({ session, sessionId, onBack, onSave }) {
         );
       })}
 
+      {/* Additional Exercises */}
+      {workout?.additionalExercises && workout.additionalExercises.length > 0 && (
+        <div className="card">
+          <div className="form-label" style={{ marginBottom: '12px' }}>Additional/Replacement Movements</div>
+          {workout.additionalExercises.map((exercise) => {
+            // Initialize data if it doesn't exist
+            if (!editData.exercises[exercise.id]) {
+              editData.exercises[exercise.id] = {
+                selected: false,
+                sets: Array(typeof exercise.sets === 'number' ? exercise.sets : 2).fill(null).map(() => ({ weight: '', reps: '' })),
+                exerciseNotes: ''
+              };
+            }
+            const data = editData.exercises[exercise.id];
+            const numSets = typeof exercise.sets === 'number' ? exercise.sets : parseInt(exercise.sets) || 2;
+
+            return (
+              <div key={exercise.id} style={{ 
+                marginBottom: '16px', 
+                padding: '12px', 
+                background: 'var(--bg-secondary)', 
+                borderRadius: '8px',
+                opacity: data.selected ? 1 : 0.6
+              }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: data.selected ? '12px' : 0 }}>
+                  <input 
+                    type="checkbox"
+                    checked={data.selected || false}
+                    onChange={(e) => updateField(`exercises.${exercise.id}.selected`, e.target.checked)}
+                    style={{ width: 'auto' }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 600 }}>{exercise.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                      {exercise.sets} × {exercise.repRange}
+                    </div>
+                  </div>
+                </label>
+
+                {data.selected && (
+                  <>
+                    <div className="set-row" style={{ marginBottom: '4px' }}>
+                      <span></span>
+                      <span className="form-label" style={{ textAlign: 'center', margin: 0 }}>Weight</span>
+                      <span className="form-label" style={{ textAlign: 'center', margin: 0 }}>Reps</span>
+                    </div>
+                    {Array(numSets).fill(null).map((_, idx) => {
+                      // Ensure sets array exists and has this index
+                      if (!data.sets) data.sets = [];
+                      if (!data.sets[idx]) data.sets[idx] = { weight: '', reps: '' };
+                      
+                      return (
+                        <div key={idx} className="set-row">
+                          <span className="set-number">{idx + 1}</span>
+                          <input 
+                            type="number"
+                            className="set-input"
+                            value={data.sets[idx]?.weight || ''}
+                            onChange={(e) => updateField(`exercises.${exercise.id}.sets.${idx}.weight`, e.target.value)}
+                          />
+                          <input 
+                            type="number"
+                            className="set-input"
+                            value={data.sets[idx]?.reps || ''}
+                            onChange={(e) => updateField(`exercises.${exercise.id}.sets.${idx}.reps`, e.target.value)}
+                          />
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Session Notes */}
       <div className="form-group">
         <label className="form-label">Session Notes</label>
