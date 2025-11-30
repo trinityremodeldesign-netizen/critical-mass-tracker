@@ -1098,10 +1098,25 @@ function EditSessionView({ session, sessionId, onBack, onSave }) {
       const updated = JSON.parse(JSON.stringify(prev));
       const keys = path.split('.');
       let obj = updated;
+      
+      // Navigate to the parent of the field we want to update
       for (let i = 0; i < keys.length - 1; i++) {
-        obj = obj[keys[i]];
+        const key = keys[i];
+        // Handle array indices (numeric strings)
+        const index = /^\d+$/.test(key) ? parseInt(key) : key;
+        
+        if (obj[index] === undefined) {
+          // Create missing intermediate objects/arrays
+          obj[index] = /^\d+$/.test(keys[i + 1]) ? [] : {};
+        }
+        obj = obj[index];
       }
-      obj[keys[keys.length - 1]] = value;
+      
+      // Set the final value
+      const finalKey = keys[keys.length - 1];
+      const finalIndex = /^\d+$/.test(finalKey) ? parseInt(finalKey) : finalKey;
+      obj[finalIndex] = value;
+      
       return updated;
     });
   };
